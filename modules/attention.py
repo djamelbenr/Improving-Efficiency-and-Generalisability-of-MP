@@ -214,6 +214,26 @@ class Attention(nn.Module):
         return energy, linear_combination
 
 #(2).spatial-attention
+class SpatialAttn(nn.Module):
+    def __init__(self, in_features, normalize_attn=True):
+        super(SpatialAttn, self).__init__()
+        self.normalize_attn = normalize_attn
+        self.op = nn.Conv2d(in_channels=in_features, out_channels=1,
+            kernel_size=1, padding=0, bias=False)
+
+    def forward(self, l, g):
+        N, C, H, W = l.size()
+        c = self.op(l+g) # (batch_size,1,H,W)
+        if self.normalize_attn:
+            a = F.softmax(c.view(N,1,-1), dim=2).view(N,1,H,W)
+        else:
+            a = torch.sigmoid(c)
+        g = torch.mul(a.expand_as(l), l)
+        if self.normalize_attn:
+            g = g.view(N,C,-1).sum(dim=2) # (batch_size,C)
+        else:
+            g = F.adaptive_avg_pool2d(g, (1,1)).view(N,C)
+        return c.view(N,1,H,W), 
 
 
 #(3).temporal-attention
@@ -236,14 +256,44 @@ class TemporalAttn(nn.Module):
         attention_vector=torch.tanh(attention_vector)
         
         return attention_vector, attention_weights
-        
-        
-        
-        
-        
-         
 
+#--projection_block
+class ProjectorBlock(nn.Module):
+    def __init__(self, in_features, out_features):
+        super(ProjectorBlock, self).__init__()
+        self.op = nn.Conv2d(in_channels=in_features, out_channels=out_features,
+            kernel_size=1, padding=0, bias=False)
+
+    def forward(self, x):
+        return self.op(x)
+    
 #-- Plot Attention Maps --
+def plot_attention_maps(input_data, attn_maps, idx=0):
+    if input_data is not None:
+        input_data = input_data[idx].detach().cpu().numpy()
+    else:
+        input_data = np.arange(attn_maps[0][idx].shape[-1])
+    attn_maps = [m[idx].detach().cpu().numpy() for m in attn_maps]
+
+    num_heads = attn_maps[0].shape[0]
+    num_layers = len(attn_maps)
+    seq_len = input_data.shape[0]
+    fig_size = 4 if num_heads == 1 else 3
+    fig, ax = plt.subplots(num_layers, num_heads, figsize=(num_heads*fig_size, num_layers*fig_size))
+    if num_layers == 1:
+        ax = [ax]
+    if num_heads == 1:
+        ax = [[a] for a in ax]
+    for row in range(num_layers):
+        for column in range(num_heads):
+            ax[row][column].imshow(attn_maps[row][column], origin='lower', vmin=0)
+            ax[row][column].set_xticks(list(range(seq_len)))
+            ax[row][column].set_xticklabels(input_data.tolist())
+            ax[row][column].set_yticks(list(range(seq_len)))
+            ax[row][column].set_yticklabels(input_data.tolist())
+            ax[row][column].set_title(f"Layer {row+1}, Head {column+1}")
+    fig.subplots_adjust(hspace=0.5)
+    plt.show()
 
 
 
