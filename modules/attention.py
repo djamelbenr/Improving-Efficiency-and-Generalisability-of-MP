@@ -141,11 +141,13 @@ class TransforerEncoder(nn.Module):
         
     ## Optional: attention map visu
     def get_attention_maps():
-        # ini 
+        # -- visu the attention map
+        # init 
         attention_maps = []
-        for l in self.layers: 
-
-
+        for l in self.layers:
+            _, attn_map = l.self_attn(x, mask=mask, return_attention=True)
+            attention_maps.append(attn_map)
+            x=l(x)
         return attention_maps
 
 
