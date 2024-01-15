@@ -228,12 +228,13 @@ class TemporalAttn(nn.Module):
         #(batch_size, time_steps, hidden_size)
         score_first_part=self.fc1(hidden_states)#(batch_size, hidden_size)
         h_t=hidden_states[:,-1,:]# (batch_size,time_steps)
-        score=
-        attention_weights= #
-        context_vector= #
-        pre_activation= #
-        attention_vector=
-        attention_vector=
+        score=torch.bmm(score_first_part, h_t.unsqueeze(2)).squeeze(2)
+        attention_weights=F.softmax(score, dim=1)#(batch_size,hidden_size)
+        context_vector= torch.bmm(hidden_states.permute(0,2,1), attention_weights.unsqueeze(2)).squeeze(2)#
+        pre_activation= torch.car((context_vector, h_t),dim=1)
+        attention_vector=self.fc2(pre_activation)
+        attention_vector=torch.tanh(attention_vector)
+        
         return attention_vector, attention_weights
         
         
