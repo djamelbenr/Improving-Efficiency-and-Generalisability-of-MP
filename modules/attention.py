@@ -133,10 +133,12 @@ def forward(self, x, mask=None):
 class TransforerEncoder(nn.Module):
 
     def __ini__(self, num_layers, **block_args):
-
-
-    def forward():
+        super().__init__()
+        self.layers = nn.ModuleList([EncoderBlock(**block_args) for _ in range(num_layers)])
         
+    def forward(self,):
+        for l in self.layers:
+            x=l(x, mask=mask)        
         return x
         
     ## Optional: attention map visu
@@ -150,6 +152,34 @@ class TransforerEncoder(nn.Module):
             x=l(x)
         return attention_maps
 
+
+## -- PositionalEncoding (optional)
+class PositionalEncoding(nn.Module):
+    """
+    PositionalEncoding--Ref: arXiv:1706.03762v7  [cs.CL]  2 Aug 2023
+                            "Attention is All You Need", 2018
+    """
+    def __init__(self, d_model, max_len=5000): 
+        #-- set 5000 in this example
+        """
+        Inputs: 
+            d_model - Hidden dimensionality of the input.
+            max_len - Maximum length of a sequence to expect.
+        """
+        super().__init__()
+
+        #-Create matrix of [SeqLen, HiddenDim] representing the positional encoding../
+        #/..for max_len inputs
+        pe = torch.zeros(max_len, d_model)
+        position=torch.arange(0,max_len, dtype=torch.float).unsqueeze(1) 
+        div_term=torch.exp(torch.arange(0,d_model,2).float()*(-math.log(10000.0) / d_model)) 
+        # shift positions
+        pe[:, 0::2]=
+        pe[:, 1::2]=
+        pe=pe.unsqueeze(0)
+
+    
+        
 
 
 
