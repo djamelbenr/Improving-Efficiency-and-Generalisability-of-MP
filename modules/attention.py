@@ -174,9 +174,20 @@ class PositionalEncoding(nn.Module):
         position=torch.arange(0,max_len, dtype=torch.float).unsqueeze(1) 
         div_term=torch.exp(torch.arange(0,d_model,2).float()*(-math.log(10000.0) / d_model)) 
         # shift positions
-        pe[:, 0::2]=
-        pe[:, 1::2]=
+        pe[:, 0::2]=torch.sin(position * div_term)
+        pe[:, 1::2]=torch.cos(position * div_term)
         pe=pe.unsqueeze(0)
+
+        # register_buffer => Tensor which is not a parameter, but should be part
+        # of the modules state.
+        # Used for tensors that need to be on the same device (GPU/TPU/CPU) as the module.
+        # persistent=False tells Pytroch to not add the buffer to the state dict (e.g., when we save the model) 
+        self.register_buffer('pe', pe, persistent=False)
+
+    def forward(self, x):
+        x=x+self.pe[:,:x.size(1)]
+        return x
+        
 
     
         
