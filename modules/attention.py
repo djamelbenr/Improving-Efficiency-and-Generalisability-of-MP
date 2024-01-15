@@ -7,7 +7,6 @@
 Created on Jan Thu 11 2024
 @author: Djamel Eddine Benrachou, Sebastien Glaser, Andry...
 """
-
 import torch 
 from torch import nn 
 from torchgviz import make_dot
@@ -20,8 +19,8 @@ import matplotlib.pyplot as plt
 """
 Attention required modules.
 1.dot_scaled_product
-2.expand_mask (optional)
-3.
+2.expand_mask (this is optional --)
+3.encoder-block
 4.multi-head attention encoder
 """
 def scaled_dot_product(q, k, v, mask=None):
@@ -90,6 +89,52 @@ class MultiheadAttention(nn.Module):
             return o, attention
         else:
             return o
+
+
+def EncoderBlock(nn.Module):
+
+    def __init__(self, input_dim, input_dim, num_heads)
+    """
+    Inputs: 
+        input_dim - Dimensionality of the input
+        num_heads - Number of heads to use in the attention block
+        dim_feedforward - Dimensionality of the hidden layer in the MLP
+        dropout - Dropout probability to use in the dropout layers
+    """
+    super().__init__()
+    
+    #-- Attention layer 
+    self.self_attn = nn.Sequential(
+        nn.Linear(input_dim, dim_feedforward)
+        nn.Dropout(dropout)
+        nn.ReLU(inplace=True)
+        nn.Linear(dim_feedforward, input_dim)
+    )
+# Layers to apply in between the main layers
+#-- normalisation layers
+    self.norm1=nn.LayerNorm(input_dim)
+    self.norm2=nn.LayerNorm(input_dim)
+    self.droptout=nn.Dropout(dropout)
+## -- forward pass
+def forward(self, x, mask=None):
+    # Attention part
+    attn_out = self.self_attn(x, mask=mask)
+    x = x + self.dropout(attn_out)
+    x = self.norm1(x)
+
+    # MLP part
+    linear_out = self.linear_net(x)
+    x = x+ self.dropout(linear_out) 
+    x = self.norm2(x)
+    return x
+
+
+
+
+    
+    
+
+
 
 
 
