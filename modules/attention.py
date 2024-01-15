@@ -187,7 +187,54 @@ class PositionalEncoding(nn.Module):
     def forward(self, x):
         x=x+self.pe[:,:x.size(1)]
         return x
+##---------------------------------#
+#|      Additional Modules         |
+##---------------------------------#
+class Attention(nn.Module):
+    def __init__(self, query_dim, key_dim, value_dim):
+        super(Attention, self).__init__()
+        self.scale=1./math.sqrt(query_dim)
+
+    def forward(self, query, keys, values):
+        ## Query = [BxQ]
+        ## Keys  = [TxBxK]
+        ## Values = [TxBxV]
+        ## Outputs=a:[TxB], lin_comb:[BxV]
+        # Here we assume :: q_dim =  k_dim (dot product attention)
+        query = query.unsqueeze(1)                 # [BxQ]   -> [Bx1xQ]
+        keys  = keys.transpose(0,1).transpose(1,2) # [TxBxK] -> [BxKxT]
+        # energy
+        energy=torch.bmm(query, keys)
+        energy=F.softmax(energy.mul_(self.scale), dim=2)# scale, noramalise
+        #get the values::
+        values=values.transpose(0,1)
+        linear_combination=torch.bmm(energy, values).squeeze(1) 
+        # [Bx1xT]x[BxTxV] -> [BxV]
+        return energy, linear_combination
+
+
+    
         
+
+    
+"""
+RNNS=["LSTM", "GRU"]
+class Encoder(nn.Module):
+    def __init__(self, embedding_dim, hidden_dim, nlayers=1, dropout=0.,
+                bidirectional=True, rnn_type='GRU')
+        
+        super(Encoder, self).__init__()
+        self.birectional=birectional
+        assert rnn_type in RNNS, 'Use on of the following: {}'.format(str(RNNS))
+        rnn_cell=getattr()
+        self.rnn=rnn_cell(embedding_dim, hidden_dim, nlayers,
+                          dropout=dropout, bidirectional=bidirectional)
+
+    def forward(self, input, hidden=None):
+        return self.rnn(input, hidden)
+"""
+
+    
 
     
         
