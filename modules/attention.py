@@ -190,6 +190,7 @@ class PositionalEncoding(nn.Module):
 ##---------------------------------#
 #|      Additional Modules         |
 ##---------------------------------#
+#.(1)- self-attention (Attention), (2).spatial-attention, (3).temporal-attention
 class Attention(nn.Module):
     def __init__(self, query_dim, key_dim, value_dim):
         super(Attention, self).__init__()
@@ -212,27 +213,42 @@ class Attention(nn.Module):
         # [Bx1xT]x[BxTxV] -> [BxV]
         return energy, linear_combination
 
+#(2).spatial-attention
 
-    
+
+#(3).temporal-attention
+class TemporalAttn(nn.Module):
+    def __init__(self, hidden_size):
+        super(TemporalAttn, self).__init__()
+        self.hidden_size= hidden_size 
+        self.fc1=nn.Linear(self.hidden_size, self.hidden_size, bias=False)
+        self.fc2=nn.Linear(self.hidden_size*2,self.hidden_size, bias=False)
+
+    def forward(self, hidden_states):
+        #(batch_size, time_steps, hidden_size)
+        score_first_part=self.fc1(hidden_states)#(batch_size, hidden_size)
+        h_t=hidden_states[:,-1,:]# (batch_size,time_steps)
+        score=
+        attention_weights= #
+        context_vector= #
+        pre_activation= #
+        attention_vector=
+        attention_vector=
+        return attention_vector, attention_weights
         
-
-    
-"""
-RNNS=["LSTM", "GRU"]
-class Encoder(nn.Module):
-    def __init__(self, embedding_dim, hidden_dim, nlayers=1, dropout=0.,
-                bidirectional=True, rnn_type='GRU')
         
-        super(Encoder, self).__init__()
-        self.birectional=birectional
-        assert rnn_type in RNNS, 'Use on of the following: {}'.format(str(RNNS))
-        rnn_cell=getattr()
-        self.rnn=rnn_cell(embedding_dim, hidden_dim, nlayers,
-                          dropout=dropout, bidirectional=bidirectional)
+        
+        
+        
+         
 
-    def forward(self, input, hidden=None):
-        return self.rnn(input, hidden)
-"""
+#-- Plot Attention Maps --
+
+
+
+
+
+
 
     
 
