@@ -94,13 +94,13 @@ class MultiheadAttention(nn.Module):
 def EncoderBlock(nn.Module):
 
     def __init__(self, input_dim, input_dim, num_heads)
-    """
-    Inputs: 
-        input_dim - Dimensionality of the input
-        num_heads - Number of heads to use in the attention block
-        dim_feedforward - Dimensionality of the hidden layer in the MLP
-        dropout - Dropout probability to use in the dropout layers
-    """
+    
+    #Inputs: 
+    #    input_dim - Dimensionality of the input
+    #    num_heads - Number of heads to use in the attention block
+    #    dim_feedforward - Dimensionality of the hidden layer in the MLP
+    #    dropout - Dropout probability to use in the dropout layers
+    
     super().__init__()
     
     #-- Attention layer 
