@@ -128,6 +128,26 @@ def forward(self, x, mask=None):
     x = self.norm2(x)
     return x
 
+## -- end. TransformerEndcoder
+
+class TransforerEncoder(nn.Module):
+
+    def __ini__(self, num_layers, **block_args):
+
+
+    def forward():
+        
+        return x
+        
+    ## Optional: attention map visu
+    def get_attention_maps():
+        # ini 
+        attention_maps = []
+        for l in self.layers: 
+
+
+        return attention_maps
+
 
 
 
