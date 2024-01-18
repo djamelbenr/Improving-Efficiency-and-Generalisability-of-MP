@@ -3,7 +3,7 @@
 ![visitors](https://visitor-badge.glitch.me/badge?page_id=djamelbenr/Motion-prediction-with-Deep-Multi-Agent-Learning-and-Multi-Head-Attention)
 
 This work aims to design a data-driven prediction framework for highly Automated Vehicles (AVs) that utilises multiple inputs to prove a multimodal, probabilistic estimate of the future intentions and trajectories of surrounding vehicles in freeway operation. Our proposed framework is a deep multi-
-agent learning-based system designed to effectively capture social interactions (please refer to our recent [paper](https://doi.org/10.1109/TITS.2022.3207347) between vehicles without relying on map information. This algorithm achieved a good prediction performance with a lower prediction error in real traffic data at highways. Evaluation of the proposed framework using the NGSIM (US-101 and I-80) and HighD datasets shows satisfactory prediction performance for long- term trajectory prediction of multiple surrounding vehicles. Additionally, the proposed framework has higher prediction accuracy and generalisability than state-of-the-art approaches.
+agent learning-based system designed to effectively capture social interactions (please refer to our recent [paper](https://doi.org/10.1109/TITS.2023.3339640) between vehicles without relying on map information. This algorithm achieved a good prediction performance with a lower prediction error in real traffic data at highways. Evaluation of the proposed framework using the NGSIM (US-101 and I-80) and HighD datasets shows satisfactory prediction performance for long- term trajectory prediction of multiple surrounding vehicles. Additionally, the proposed framework has higher prediction accuracy and generalisability than state-of-the-art approaches.
 
 [Djamel Eddine Benrachou](https://scholar.google.com/citations?user=0lHe7ycAAAAJ&hl=en)
 
@@ -12,18 +12,17 @@ agent learning-based system designed to effectively capture social interactions 
 ------------------
 
 **News 🚀🚀**
-- [04/2023] Ongoing repo update. The most recent work...
-- [03/2023] Work on Transactions on Intelligent Transportation Systems (T-ITS, Q1-JCR)...
+- [12/2023] Work on Transactions on Intelligent Transportation Systems (T-ITS, Q1-JCR):
+            "Improving Efficiency and Generalisability of Motion Predictions With Deep Multi-Agent Learning and Multi-Head Attention"
 - [09/2022] Work on Transactions on Intelligent Transportation Systems (T-ITS, Q1-JCR): 
             "Use of Social Interaction and Intention to Improve Motion Prediction Within Automated Vehicle Framework: A Review"
             
 ------------------
 
 This is the official repository and [PyTorch](https://pytorch.org/) implementations of different works presented at:
-To be added ..
 
 Our papers:
-- [Improving Efficiency and Generalisability of Motion Predictions with Multi-Agent Learning and Multi-Head Attention](https://arxiv.org/) in IEEE Transactions on Intelligent Transportation Systems
+- [Improving Efficiency and Generalisability of Motion Predictions with Multi-Agent Learning and Multi-Head Attention](https://ieeexplore.ieee.org/abstract/document/10368189/) in IEEE Transactions on Intelligent Transportation Systems
 - [Use of Social Interaction and Intention to Improve Motion Prediction Within Automated Vehicle Framework: A Review](https://ieeexplore.ieee.org/abstract/document/9904961) in IEEE Transactions on Intelligent Transportation Systems
 
 
@@ -72,15 +71,6 @@ pip install \
     ipykernel \
     sns
 ```
-In order to install torch-geometric and associated modules for the GNN computations, please check the following documentation:
-
-https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html
-
-E.g.
-
-```
-pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.13.0+cu116.html
-```
 
 # Datasets
 
@@ -112,19 +102,6 @@ Dataset fields:
 
 ## Pre-processed NGSIM and HighD can be downloaded from [here](https://connectqutedu-my.sharepoint.com/:u:/r/personal/n10439251_qut_edu_au/Documents/processed_data/OneDrive_1_4-20-2023.zip?csf=1&web=1&e=uRNYbS)
 ## Argoverse
-
-Get the data from the Argoverse website:
-* https://www.argoverse.org/
-
-Put their API from Argoverse in a directory at same depth named "Argoverse"
-* https://github.com/argoai/argoverse-api
-
-# Special instructions for Hybrid Models: 
-Setup the name of the trained model in the load_name field of config file (.yaml) (follow the example: <model>_<dataset>_<id>)
-Run python ```test_models/save_trained_model.py``` to save the prediction results computed on the test set (after training).
-Run python ```test_models/statistic_result.py``` to print metrics evaluation (RMSE,NLL, etc.), plot covariance matching and error histogram (from the saved results).
-
-
 
 
 Data Preparation:
