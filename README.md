@@ -149,6 +149,16 @@ Trained models can be downloaded [here](https://connectqutedu-my.sharepoint.com/
  
 # Citation
 
+Please cite our papers if you used our code. Thanks.
+```
+@article{benrachou2022use,
+  title={Use of social interaction and intention to improve motion prediction within automated vehicle framework: A review},
+  author={Benrachou, Djamel Eddine and Glaser, Sebastien and Elhenawy, Mohammed and Rakotonirainy, Andry},
+  journal={IEEE Transactions on Intelligent Transportation Systems},
+  year={2022},
+  publisher={IEEE}
+}
+
 @article{benrachou2023improving,
   title={Improving Efficiency and Generalisability of Motion Predictions With Deep Multi-Agent Learning and Multi-Head Attention},
   author={Benrachou, Djamel Eddine and Glaser, Sebastien and Elhenawy, Mohammed and Rakotonirainy, Andry},
@@ -156,5 +166,7 @@ Trained models can be downloaded [here](https://connectqutedu-my.sharepoint.com/
   year={2023},
   publisher={IEEE}
 }
+```
+
 
  # License
