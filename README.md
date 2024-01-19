@@ -25,6 +25,9 @@ Our papers:
 - [Improving Efficiency and Generalisability of Motion Predictions with Multi-Agent Learning and Multi-Head Attention](https://ieeexplore.ieee.org/abstract/document/10368189/) in IEEE Transactions on Intelligent Transportation Systems
 - [Use of Social Interaction and Intention to Improve Motion Prediction Within Automated Vehicle Framework: A Review](https://ieeexplore.ieee.org/abstract/document/9904961) in IEEE Transactions on Intelligent Transportation Systems
 
+# Algorithm: 
+
+![Improving Efficiency and Generalisability of Motion Predictions With Deep Multi-Agent Learning and Multi-Head Attention](images/algorithm.png)
 
 # Setup：
 The code can be executed in a conda environment--please follow the tutorial below
