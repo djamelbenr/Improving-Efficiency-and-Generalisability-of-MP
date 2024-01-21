@@ -104,8 +104,6 @@ Dataset fields:
    * [https://www.highd.com/](https://www.highd-dataset.com/)
 
 ## Pre-processed NGSIM and HighD can be downloaded from [here](https://connectqutedu-my.sharepoint.com/:u:/r/personal/n10439251_qut_edu_au/Documents/processed_data/OneDrive_1_4-20-2023.zip?csf=1&web=1&e=uRNYbS)
-## Argoverse
-
 
 Data Preparation:
 The raw data of Next Generation Simulation (NGSIM) is downloadable at https://ops.fhwa.dot.gov/trafficanalysistools/ngsim.htm
