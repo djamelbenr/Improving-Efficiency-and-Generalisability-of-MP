@@ -1,6 +1,6 @@
 # Improving-Efficiency-and-Generalisability-of-Motion-Predictions-with-Deep-Multi-Agent-Learning-and-Multi-Head-Attention
 
-![visitors](https://visitor-badge.glitch.me/badge?page_id=djamelbenr/Motion-prediction-with-Deep-Multi-Agent-Learning-and-Multi-Head-Attention)
+![visitors](https://visitor-badge.glitch.me/badge?page_id=djamelbenr/Improving_Efficiency_and_Generalisability_of_Motion_Predictions_with_Deep_MultiAgent_Learning)
 
 This work aims to design a data-driven prediction framework for highly Automated Vehicles (AVs) that utilises multiple inputs to prove a multimodal, probabilistic estimate of the future intentions and trajectories of surrounding vehicles in freeway operation. Our proposed framework is a deep multi-
 agent learning-based system designed to effectively capture social interactions (please refer to our recent [paper](https://doi.org/10.1109/TITS.2023.3339640) between vehicles without relying on map information. This algorithm achieved a good prediction performance with a lower prediction error in real traffic data at highways. Evaluation of the proposed framework using the NGSIM (US-101 and I-80) and HighD datasets shows satisfactory prediction performance for long- term trajectory prediction of multiple surrounding vehicles. Additionally, the proposed framework has higher prediction accuracy and generalisability than state-of-the-art approaches.
