@@ -4,12 +4,14 @@ import logging
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-#from AttnEncodeDecoderRNNPiP import TrajPred
-from AttnEncodeDecoderRNNPiP2 import TrajPred ## Ours 
-#from pipmodel import TrajPred
-#from modelBiLSTMGRU import TrajPred
-#from GRU_LSTM_BiLSTM import TrajPred
-#from model import TrajPred
+
+##----------------------------
+#  import our model as TrajPred then run the prediction tests..
+#
+##----------------------------
+
+
+
 from data_process import highwayTrajDataset
 from utils import initLogging, maskedMSETest, maskedNLLTest
 
