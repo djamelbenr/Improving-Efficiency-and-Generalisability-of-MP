@@ -7,14 +7,6 @@ import logging
 import torch
 from torch.utils.data import DataLoader
 
-##from modelMonGRUGRU import TrajPred
-#from modelAttentionLSTM import TrajPred
-from AttnEncodeDecoderRNNPiP import TrajPred ## Ours 
-#from pipmodel import TrajPred
-##from GRU_LSTM_BiLSTM import TrajPred
-#from pipmodel import TrajPred
-#from modelBiLSTMGRU import TrajPred
-#from model import TrajPred
 from data_process import highwayTrajDataset
 from utils import initLogging, maskedNLL, maskedMSE, maskedNLLTest
 
@@ -45,20 +37,10 @@ python train.py --name ngsim_demo --batch_size 64 --pretrain_epochs 5 --train_ep
     % ----------+------------+----------+-----------+---------+--------+---------
     %% should be converted from feet to meter ...
     
-    # add LSTM-MDN for a better accuracy ...
-    https://github.com/DuaneNielsen/mixturedensity
-    
 '''
-parser = argparse.ArgumentParser(description="train my motion predictor ...") 
-# add parameters ...
-# load data ...
-# 
-# 1- Lane-Keeping (LK), Right Lane Change (RLC), Left Lane Change (LLC) ... 
-# 2- 
-#
-## --- 
-# insert arguments of tensorboard ...
+
 ## General arguments ... 
+parser = argparse.ArgumentParser(description="train my motion predictor ...") 
 parser.add_argument('--train_output_flag', action="store_false", help='if concatenate with true maneuver label (default: True)', default = True)
 parser.add_argument('--tensorboard', action='store_false', help='if using tensorboard (default : True otherwise use Tensorboard, cuda : False)', default=True) # use cuda ...
 
