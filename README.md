@@ -1,4 +1,4 @@
-# Improving-Efficiency-and-Generalisability-of-Motion-Predictions-with-Deep-Multi-Agent-Learning-and-Multi-Head-Attention (the repo is being updated ...)
+# IEG Motion Predictions with Deep Multi Agent Learning (the repo is being updated ...)
 
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Fdjamelbenr%2FImproving_Efficiency_and_Generalisability_of_Motion_Predictions_with_Deep_MultiAgent_Learning%2F&label=VISITORS&countColor=%23263759)
 
