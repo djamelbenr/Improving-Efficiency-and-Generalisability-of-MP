@@ -1,3 +1,13 @@
+#!/usr/bin/env python3.8
+# -*- coding: utf-8 -*-
+
+## Attention function 
+
+"""
+Created on Jan Thu 24 2024
+@author: Djamel Eddine Benrachou et al.
+"""
+
 import torch 
 from torch import nn
 from utils import outputActivation
