@@ -1,9 +1,8 @@
-# IEG Motion Predictions with Deep Multi Agent Learning (the repo is being updated ...)
+# IEG Motion Predictions with Deep Multi-Agent Learning (Repository is currently being updated...)
 
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Fdjamelbenr%2FImproving_Efficiency_and_Generalisability_of_Motion_Predictions_with_Deep_MultiAgent_Learning%2F&label=VISITORS&countColor=%23263759)
 
-This work aims to design a data-driven prediction framework for highly Automated Vehicles (AVs) that utilises multiple inputs to prove a multimodal, probabilistic estimate of the future intentions and trajectories of surrounding vehicles in freeway operation. Our proposed framework is a deep multi-
-agent learning-based system designed to effectively capture social interactions (please refer to our recent [paper](https://doi.org/10.1109/TITS.2023.3339640) between vehicles without relying on map information. This algorithm achieved a good prediction performance with a lower prediction error in real traffic data at highways. Evaluation of the proposed framework using the NGSIM (US-101 and I-80) and HighD datasets shows satisfactory prediction performance for long- term trajectory prediction of multiple surrounding vehicles. Additionally, the proposed framework has higher prediction accuracy and generalisability than state-of-the-art approaches.
+This project is focused on developing a data-driven prediction framework for highly automated vehicles (AVs), leveraging multiple inputs to provide a multimodal, probabilistic estimate of the future intentions and trajectories of surrounding vehicles in freeway operations. Our proposed framework utilises deep multi-agent learning to effectively capture social interactions between vehicles, without relying on map information. Please refer to our recent [publication](https://doi.org/10.1109/TITS.2023.3339640) for more details. This algorithm has demonstrated superior prediction performance, with reduced error in real-world traffic data from highways. Evaluation using the NGSIM (US-101 and I-80) and HighD datasets indicates strong prediction performance for long-term trajectory forecasting of multiple surrounding vehicles. Furthermore, the framework exhibits enhanced prediction accuracy and generalisability compared to state-of-the-art methods.
 
 [Djamel Eddine Benrachou](https://scholar.google.com/citations?user=0lHe7ycAAAAJ&hl=en)
 
@@ -13,25 +12,26 @@ agent learning-based system designed to effectively capture social interactions 
 
 **News 🚀🚀**
 - [12/2023] Work on Transactions on Intelligent Transportation Systems (T-ITS, Q1-JCR):
-            "Improving Efficiency and Generalisability of Motion Predictions With Deep Multi-Agent Learning and Multi-Head Attention"
-- [09/2022] Work on Transactions on Intelligent Transportation Systems (T-ITS, Q1-JCR): 
-            "Use of Social Interaction and Intention to Improve Motion Prediction Within Automated Vehicle Framework: A Review"
-            
+  "Improving Efficiency and Generalisability of Motion Predictions With Deep Multi-Agent Learning and Multi-Head Attention"
+- [09/2022] Work on Transactions on Intelligent Transportation Systems (T-ITS, Q1-JCR):
+  "Use of Social Interaction and Intention to Improve Motion Prediction Within Automated Vehicle Framework: A Review"
+
 ------------------
 
-This is the official repository and [PyTorch](https://pytorch.org/) implementations of different works presented at:
+This is the official repository and [PyTorch](https://pytorch.org/) implementations of different works presented in:
 
 Our papers:
 - [Improving Efficiency and Generalisability of Motion Predictions with Multi-Agent Learning and Multi-Head Attention](https://ieeexplore.ieee.org/abstract/document/10368189/) in IEEE Transactions on Intelligent Transportation Systems
 - [Use of Social Interaction and Intention to Improve Motion Prediction Within Automated Vehicle Framework: A Review](https://ieeexplore.ieee.org/abstract/document/9904961) in IEEE Transactions on Intelligent Transportation Systems
 
-# Algorithm: 
+# Algorithm:
 
 ![Improving Efficiency and Generalisability of Motion Predictions With Deep Multi-Agent Learning and Multi-Head Attention](images/algorithm.png)
 
-# Setup：
-The code can be executed in a conda environment--please follow the tutorial below
-```
+# Setup:
+The code can be executed in a Conda environment—please follow the tutorial below:
+
+```bash
 conda create -n MyEnvi python=3.7
 source activate MyEnvi
 
