@@ -12,7 +12,7 @@ from modelTraj import TrajPred
 
 
 from data4process import highwayTrajDataset
-from utilz import initLogging, maskedNLL, maskedMSE, maskedNLLTest
+from utils import initLogging, maskedNLL, maskedMSE, maskedNLLTest
 from torchviz import make_dot
 from torch.utils.tensorboard import SummaryWriter
 HDF5_USE_FILE_LOCKING='FALSE'
