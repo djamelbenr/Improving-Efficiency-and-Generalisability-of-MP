@@ -4,7 +4,7 @@ import numpy as np
 import torch  
 
 from torch.utils.data import Dataset 
-from utilz import quintic_spline, fitting_traj_by_qs  
+from utils import quintic_spline, fitting_traj_by_qs  
 
 
 # Define the highwayTrajDataset class which inherits from the PyTorch Dataset class
