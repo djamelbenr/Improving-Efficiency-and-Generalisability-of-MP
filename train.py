@@ -11,8 +11,8 @@ from tqdm import tqdm as progress_bar  # Import tqdm with an alias
 from modelTraj import TrajPred
 
 
-from dataprocess import highwayTrajDataset
-from utils import initLogging, maskedNLL, maskedMSE, maskedNLLTest
+from data4process import highwayTrajDataset
+from utilz import initLogging, maskedNLL, maskedMSE, maskedNLLTest
 from torchviz import make_dot
 from torch.utils.tensorboard import SummaryWriter
 HDF5_USE_FILE_LOCKING='FALSE'
@@ -187,7 +187,7 @@ def validate_epoch(epoch_num, model, val_loader, args, logger_val):
 
     with torch.no_grad():
         for i, data in enumerate(val_loader):
-            inputs = [d.cuda() if args.use_cuda else d for d in data]
+            inputs = [d.cuda() if isinstance(d, torch.Tensor) and args.use_cuda else d for d in data]
             nbsHist, nbsMask, planFut, planMask, targsHist, targsEncMask, targsFut, targsFutMask, lat_enc, lon_enc, _ = inputs
 
             # Forward pass and loss computation
