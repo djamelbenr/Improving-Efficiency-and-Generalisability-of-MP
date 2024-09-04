@@ -1,21 +1,21 @@
 import os
-os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
-os.environ["HDF5_USE_FILE_LOCKING"]='FALSE'
 import time
 import argparse
 import logging
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm as progress_bar  # Import tqdm with an alias
+import matplotlib.pyplot as plt
+from torch.utils.tensorboard import SummaryWriter
 
 from modelTraj import TrajPred
-import matplotlib.pyplot as plt
-
 from data4process import highwayTrajDataset
 from utilz import initLogging, maskedNLL, maskedMSE, maskedNLLTest
-from torchviz import make_dot
-from torch.utils.tensorboard import SummaryWriter
-HDF5_USE_FILE_LOCKING='FALSE'
+
+# Ensuring correct environment variables
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+os.environ["HDF5_USE_FILE_LOCKING"] = 'FALSE'
+HDF5_USE_FILE_LOCKING = 'FALSE'
 
 
 '''
@@ -98,18 +98,21 @@ def parse_arguments():
 
     return parser.parse_args()
 
+
 def setup_logging(log_path):
     """Initialize logging and create log directory if it doesn't exist."""
     os.makedirs(log_path, exist_ok=True)
     initLogging(log_file=log_path + 'train.log')
 
+
 def initialize_model(args):
     """Initialize the Trajectory Prediction model and optimizer."""
     model = TrajPred(args)
     if args.use_cuda:
-        model = model.cuda()
+        model = model.cuda()  # Move model to GPU if CUDA is enabled
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     return model, optimizer
+
 
 def load_datasets(args):
     """Load training and validation datasets."""
@@ -152,16 +155,18 @@ def plot_and_save_loss(epoch_num, train_loss_history, val_loss_history, log_path
     plt.savefig(f"{log_path}/loss_curve_epoch_{epoch_num + 1}.png")
     plt.close()
 
+
 def train_epoch(epoch_num, model, optimizer, train_loader, args, logger, train_loss_history):
     """Train the model for one epoch."""
     model.train()
     total_loss = 0
     avg_time_per_batch = 0
-    dataset_length = len(train_loader.dataset)
 
     with progress_bar(total=len(train_loader), dynamic_ncols=True, desc=f"Epoch {epoch_num + 1}/{args.pretrain_epochs + args.train_epochs}") as pbar:
         for batch_idx, data in enumerate(train_loader):
             start_time = time.time()
+
+            # Ensure all data tensors are moved to the correct device
             inputs = [d.cuda() if isinstance(d, torch.Tensor) and args.use_cuda else d for d in data]
             nbsHist, nbsMask, planFut, planMask, targsHist, targsEncMask, targsFut, targsFutMask, lat_enc, lon_enc, _ = inputs
 
@@ -200,6 +205,7 @@ def train_epoch(epoch_num, model, optimizer, train_loader, args, logger, train_l
     train_loss_history.append(avg_loss)  # Append to the history list for plotting
     logger.add_scalar("Loss/epoch_train", avg_loss, epoch_num)
 
+
 def validate_epoch(epoch_num, model, val_loader, args, logger_val, val_loss_history):
     """Validate the model after each epoch."""
     model.eval()
@@ -207,6 +213,7 @@ def validate_epoch(epoch_num, model, val_loader, args, logger_val, val_loss_hist
 
     with torch.no_grad():
         for i, data in enumerate(val_loader):
+            # Ensure data is on the correct device
             inputs = [d.cuda() if isinstance(d, torch.Tensor) and args.use_cuda else d for d in data]
             nbsHist, nbsMask, planFut, planMask, targsHist, targsEncMask, targsFut, targsFutMask, lat_enc, lon_enc, _ = inputs
 
@@ -225,7 +232,9 @@ def validate_epoch(epoch_num, model, val_loader, args, logger_val, val_loss_hist
 
     logging.info(f"Validation | Avg Loss: {avg_loss_val:.4f}")
 
+
 def train_my_model():
+    """Main training function."""
     args = parse_arguments()
 
     log_path = f"./trained_models/{args.name}/"
@@ -258,6 +267,7 @@ def train_my_model():
     final_model_save_path = log_path + f"{args.name}.tar"
     torch.save(model.state_dict(), final_model_save_path)
     logging.info(f"Model saved at {final_model_save_path}")
+
 
 if __name__ == '__main__':
     train_my_model()
