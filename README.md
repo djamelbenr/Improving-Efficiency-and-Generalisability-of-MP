@@ -122,7 +122,7 @@ python3 evaluate.py --name ngsim_model --batch_size 64 \
 
 Trained models can be downloaded [here](https://connectqutedu-my.sharepoint.com/)
 
-
+![Training Progress](images/training_progress.png)
   
  
 # Citation
