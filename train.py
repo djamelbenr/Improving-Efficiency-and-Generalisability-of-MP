@@ -9,10 +9,10 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm as progress_bar  # Import tqdm with an alias
 
 from modelTraj import TrajPred
-
+import matplotlib.pyplot as plt
 
 from data4process import highwayTrajDataset
-from utils.utils import initLogging, maskedNLL, maskedMSE, maskedNLLTest
+from utilz import initLogging, maskedNLL, maskedMSE, maskedNLLTest
 from torchviz import make_dot
 from torch.utils.tensorboard import SummaryWriter
 HDF5_USE_FILE_LOCKING='FALSE'
@@ -57,6 +57,7 @@ def parse_arguments():
 
     # CUDA and module settings
     parser.add_argument('--use_cuda', action='store_false', help='Use CUDA (default: True)', default=True)
+    parser.add_argument('--use_planning', action='store_false', help='Use planning module (default: False)', default=False)
     parser.add_argument('--use_fusion', action='store_false', help='Use target vehicle info fusion module (default: True)', default=True)
 
     # Training parameters
@@ -136,70 +137,93 @@ def load_datasets(args):
 
     return train_loader, val_loader
 
-def train_epoch(epoch_num, model, optimizer, train_loader, args, logger):
+
+def plot_and_save_loss(epoch_num, train_loss_history, val_loss_history, log_path):
+    """Plot and save the training and validation loss curves."""
+    plt.figure(figsize=(10, 5))
+    plt.plot(train_loss_history, label='Training Loss')
+    plt.plot(val_loss_history, label='Validation Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title(f'Training and Validation Loss Over Epochs (Epoch {epoch_num + 1})')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(f"{log_path}/loss_curve_epoch_{epoch_num + 1}.png")
+    plt.close()
+
+def train_epoch(epoch_num, model, optimizer, train_loader, args, logger, train_loss_history):
     """Train the model for one epoch."""
     model.train()
-    avg_loss_tr, avg_time_tr = 0, 0
-    dataset_length = len(train_loader.dataset)  # Get the dataset length before wrapping with tqdm
-    train_loader = progress_bar(train_loader, desc=f"Epoch {epoch_num + 1}/{args.pretrain_epochs + args.train_epochs}", dynamic_ncols=True)
+    total_loss = 0
+    avg_time_per_batch = 0
+    dataset_length = len(train_loader.dataset)
 
-    for i, data in enumerate(train_loader):
-        start_time = time.time()
-        # Ensure only tensors are sent to GPU
-        inputs = [d.cuda() if isinstance(d, torch.Tensor) and args.use_cuda else d for d in data]
+    with progress_bar(total=len(train_loader), dynamic_ncols=True, desc=f"Epoch {epoch_num + 1}/{args.pretrain_epochs + args.train_epochs}") as pbar:
+        for batch_idx, data in enumerate(train_loader):
+            start_time = time.time()
+            inputs = [d.cuda() if isinstance(d, torch.Tensor) and args.use_cuda else d for d in data]
+            nbsHist, nbsMask, planFut, planMask, targsHist, targsEncMask, targsFut, targsFutMask, lat_enc, lon_enc, _ = inputs
 
-        nbsHist, nbsMask, planFut, planMask, targsHist, targsEncMask, targsFut, targsFutMask, lat_enc, lon_enc, _ = inputs
+            # Forward pass
+            fut_pred, lat_pred, lon_pred = model(nbsHist, nbsMask, planFut, planMask, targsHist, targsEncMask, lat_enc, lon_enc)
 
-        # Forward pass
-        fut_pred, lat_pred, lon_pred = model(nbsHist, nbsMask, planFut, planMask, targsHist, targsEncMask, lat_enc, lon_enc)
+            # Compute loss
+            if epoch_num < args.pretrain_epochs:
+                loss = maskedMSE(fut_pred, targsFut, targsFutMask)
+            else:
+                loss = maskedNLL(fut_pred, targsFut, targsFutMask) + torch.nn.BCELoss()(lat_pred, lat_enc) + torch.nn.BCELoss()(lon_pred, lon_enc)
 
-        # Compute loss
-        if epoch_num < args.pretrain_epochs:
-            loss = maskedMSE(fut_pred, targsFut, targsFutMask)
-        else:
-            loss = maskedNLL(fut_pred, targsFut, targsFutMask) + torch.nn.BCELoss()(lat_pred, lat_enc) + torch.nn.BCELoss()(lon_pred, lon_enc)
+            optimizer.zero_grad()
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 10)
+            optimizer.step()
 
-        # Backpropagation
-        optimizer.zero_grad()
-        loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 10)
-        optimizer.step()
+            total_loss += loss.item()
+            batch_time = time.time() - start_time
+            avg_time_per_batch += batch_time
 
-        # Logging and progress bar update
-        avg_loss_tr += loss.item()
-        avg_time_tr += time.time() - start_time
-
-        if i % 100 == 99:
-            eta = avg_time_tr / (i + 1) * (len(train_loader) - (i + 1))
-            epoch_progress = (i + 1) * args.batch_size / dataset_length
-            train_loader.set_postfix({
-                'Avg Loss': f"{avg_loss_tr / (i + 1):.4f}",
-                'Progress': f"{epoch_progress * 100:.2f}%",
-                'ETA': f"{int(eta)}s"
+            # Update progress bar with detailed info
+            pbar.set_postfix({
+                'Batch': f"{batch_idx + 1}/{len(train_loader)}",
+                'Loss': f"{loss.item():.4f}",
+                'Avg Loss': f"{total_loss / (batch_idx + 1):.4f}",
+                'ETA': f"{int(avg_time_per_batch / (batch_idx + 1) * (len(train_loader) - batch_idx - 1))}s"
             })
-            logger.add_scalar("Loss/train", avg_loss_tr / (i + 1), epoch_progress + epoch_num)
+            pbar.update(1)
 
-def validate_epoch(epoch_num, model, val_loader, args, logger_val):
+            # Log batch-level loss
+            if (batch_idx + 1) % 100 == 0:
+                logger.add_scalar("Loss/train_batch", total_loss / (batch_idx + 1), epoch_num * len(train_loader) + batch_idx)
+
+    avg_loss = total_loss / len(train_loader)
+    train_loss_history.append(avg_loss)  # Append to the history list for plotting
+    logger.add_scalar("Loss/epoch_train", avg_loss, epoch_num)
+
+def validate_epoch(epoch_num, model, val_loader, args, logger_val, val_loss_history):
     """Validate the model after each epoch."""
     model.eval()
-    avg_loss_val = 0
+    total_loss = 0
 
     with torch.no_grad():
         for i, data in enumerate(val_loader):
             inputs = [d.cuda() if isinstance(d, torch.Tensor) and args.use_cuda else d for d in data]
             nbsHist, nbsMask, planFut, planMask, targsHist, targsEncMask, targsFut, targsFutMask, lat_enc, lon_enc, _ = inputs
 
-            # Forward pass and loss computation
             fut_pred, lat_pred, lon_pred = model(nbsHist, nbsMask, planFut, planMask, targsHist, targsEncMask, lat_enc, lon_enc)
             loss = maskedNLLTest(fut_pred, lat_pred, lon_pred, targsFut, targsFutMask, avg_along_time=True)
 
-            avg_loss_val += loss.item()
+            total_loss += loss.item()
 
             if i == 19:
-                logger_val.add_scalar("Loss/val", avg_loss_val / 20, epoch_num)
+                logger_val.add_scalar("Loss/val_batch", total_loss / 20, epoch_num)
                 break
 
-    logging.info(f"Validation | Avg Loss: {avg_loss_val / 20:.2f}")
+    avg_loss_val = total_loss / len(val_loader)
+    val_loss_history.append(avg_loss_val)
+    logger_val.add_scalar("Loss/epoch_val", avg_loss_val, epoch_num)
+
+    logging.info(f"Validation | Avg Loss: {avg_loss_val:.4f}")
 
 def train_my_model():
     args = parse_arguments()
@@ -215,13 +239,18 @@ def train_my_model():
     model, optimizer = initialize_model(args)
     train_loader, val_loader = load_datasets(args)
 
+    train_loss_history = []  # List to store training loss per epoch
+    val_loss_history = []  # List to store validation loss per epoch
+
     logging.info(f"Starting training: {args.name}")
     logging.info(f"Batch size: {args.batch_size} | Learning rate: {args.learning_rate}")
     logging.info(f"Using Planning Module: {args.use_planning} | Using Fusion Module: {args.use_fusion}")
 
     for epoch_num in range(args.pretrain_epochs + args.train_epochs):
-        train_epoch(epoch_num, model, optimizer, train_loader, args, logger)
-        validate_epoch(epoch_num, model, val_loader, args, logger_val)
+        train_epoch(epoch_num, model, optimizer, train_loader, args, logger, train_loss_history)
+        validate_epoch(epoch_num, model, val_loader, args, logger_val, val_loss_history)
+
+        plot_and_save_loss(epoch_num, train_loss_history, val_loss_history, log_path)
 
         model_save_path = log_path + f"{args.name}-pre{args.pretrain_epochs if epoch_num < args.pretrain_epochs else 0}-nll{epoch_num}.tar"
         torch.save(model.state_dict(), model_save_path)
