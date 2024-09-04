@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-from utils import outputActivation
+from utils.utils import outputActivation
 from attention import MultiheadAttention, EncoderBlock, TransformerEncoder
 import matplotlib.pyplot as plt
 
