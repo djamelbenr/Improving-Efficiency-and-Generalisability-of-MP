@@ -10,7 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from modelTraj import TrajPred
 from data4process import highwayTrajDataset
-from utilz import initLogging, maskedNLL, maskedMSE, maskedNLLTest
+from utils import initLogging, maskedNLL, maskedMSE, maskedNLLTest
 
 # Ensuring correct environment variables
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
