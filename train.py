@@ -57,7 +57,6 @@ def parse_arguments():
 
     # CUDA and module settings
     parser.add_argument('--use_cuda', action='store_false', help='Use CUDA (default: True)', default=True)
-    parser.add_argument('--use_planning', action='store_false', help='Use planning module (default: False)', default=False)
     parser.add_argument('--use_fusion', action='store_false', help='Use target vehicle info fusion module (default: True)', default=True)
 
     # Training parameters
