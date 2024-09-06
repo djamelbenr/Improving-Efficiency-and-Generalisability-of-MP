@@ -83,7 +83,7 @@ for rowIndex = 1:numRows
 end
 
 % Return the filtered trajectory data, excluding rows that were not filled (with zeros).
-final_traj = updated_traj(updated_traj(:, 1) ~= 0, :);  % Remove rows with a zero in the first column (invalid rows).
+final_traj = updated_traj(updated_traj(:, 1) ~= 0, :);  %% Cleanup - remove rows with a zero in the first column (invalid rows).
 fprintf('\nOriginal #rows: %d ===>>> Filtered #rows: %d \n\n', size(traj, 1), size(final_traj, 1));  % Print the number of rows before and after filtering.
 
 end
