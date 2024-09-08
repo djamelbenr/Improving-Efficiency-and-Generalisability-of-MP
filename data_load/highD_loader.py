@@ -137,10 +137,11 @@ class HighDDatasetProcessor:
         savemat(os.path.join(self.post_folder, 'highdTestAround.mat'), {'traj': self.traj_ts, 'tracks': self.tracks})
 
 # Example of how to use the class
+'''
 if __name__ == "__main__":
     processor = HighDDatasetProcessor()
     processor.load_data()
     processor.parse_fields()
     processor.merge_and_split()
     processor.save_data()
-
+'''
