@@ -275,6 +275,7 @@ class NGSIMDatasetProcessor:
         # Save the processed datasets into .mat files
         self.save_data(traj_tr, traj_val, traj_ts, tracks)
 
+'''
 # Main execution block
 if __name__ == "__main__":
     # Defining the file paths to the raw NGSIM datasets
@@ -292,3 +293,4 @@ if __name__ == "__main__":
     
     # Running the process method to handle the dataset
     processor.process(dataset_to_use=6, file_paths=file_paths)
+'''
