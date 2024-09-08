@@ -92,10 +92,6 @@ Dataset fields:
 * doc/trajectory-data-dictionary.htm  
 
 This Dataset is to be pre-processed with the Matlab function preprocess_data.m (that is a slightly modified version of the one from https://github.com/nachiket92/conv-social-pooling)
-
-* Already preprocessed samples: (to run tests on Hybrid-Models)
-    * https://drive.google.com/open?id=171YZvK2DnJbtIgve6qAOkk6AFNrGAYTJ
-    * https://drive.google.com/open?id=1N080iiQc43MTvLMqaLtsZh49okJL0hPx
     
 Dataset fields:  
 * doc/trajectory-data-dictionary.htm  
