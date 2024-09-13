@@ -6,7 +6,6 @@ import logging
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-
 import matplotlib.pyplot as plt
 import seaborn as sns
 from prettytable import PrettyTable
@@ -45,51 +44,63 @@ parser.add_argument('--metric', type=str, default="agent", help='Evaluation metr
 parser.add_argument('--IA_module', action='store_false', default=True, help='IA module (default: True)')
 
 
-
 def model_evaluate():
     args = parser.parse_args() 
+    # Load the trained model
     model = TrajPred(args)
-    model.load_state_dict(torch.load('./trained_models/{}/{}.tar'.format((args.name).split('-')[0], args.name)))
+    model.load_state_dict(torch.load(f'./trained_models/{args.name.split("-")[0]}/{args.name}.tar'))
     if args.use_cuda:
         model = model.cuda()
 
-
-    model.eval()
+    model.eval()  # Set model to evaluation mode
     model.train_output_flag = False
-    initLogging(log_file='./trained_models/{}/evaluation.log'.format((args.name).split('-')[0]))
+    initLogging(log_file=f'./trained_models/{args.name.split("-")[0]}/evaluation.log')
 
-    logging.info("Loading test data from {}...".format(args.test_set))
-  
-    tsSet = highwayTrajDataset(path=args.test_set,
-                               targ_enc_size=args.social_context_size+args.dynamics_encoding_size,
-                               grid_size=args.grid_size,
-                               fit_plan_traj=False,
-                               fit_plan_further_ds=args.plan_info_ds)
+    logging.info(f"Loading test data from {args.test_set}...")
     
-    logging.info("TOTAL :: {} test data.".format(len(tsSet)) )
-    tsDataloader = DataLoader(tsSet, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, collate_fn=tsSet.collate_fn)
+    # Load test dataset
+    tsSet = highwayTrajDataset(
+        path=args.test_set,
+        targ_enc_size=args.social_context_size + args.dynamics_encoding_size,
+        grid_size=args.grid_size,
+        fit_plan_traj=False,
+        fit_plan_further_ds=args.plan_info_ds
+    )
+    logging.info(f"TOTAL :: {len(tsSet)} test samples.")
+    
+    # Create DataLoader for test set
+    tsDataloader = DataLoader(
+        tsSet, batch_size=args.batch_size, shuffle=False, 
+        num_workers=args.num_workers, collate_fn=tsSet.collate_fn
+    )
 
-    logging.info("<{}> evaluated by {}-based NLL & RMSE, with planning input of {}s step.".format(args.name, args.metric, args.plan_info_ds*0.2))
+    logging.info(f"<{args.name}> evaluated by {args.metric}-based NLL & RMSE, with planning input of {args.plan_info_ds * 0.2}s step.")
+    
+    # Initialize loss statistics based on the evaluation metric
     if args.metric == 'agent':
+        # Initialize for agent-based evaluation
         nll_loss_stat = np.zeros((np.max(tsSet.Data[:, 0]).astype(int) + 1,
                                   np.max(tsSet.Data[:, 13:(13 + tsSet.grid_cells)]).astype(int) + 1, args.out_length))
-        rmse_loss_stat = np.zeros((np.max(tsSet.Data[:, 0]).astype(int) + 1,
-                                   np.max(tsSet.Data[:, 13:(13 + tsSet.grid_cells)]).astype(int) + 1, args.out_length))
-        both_count_stat = np.zeros((np.max(tsSet.Data[:, 0]).astype(int) + 1,
-                                    np.max(tsSet.Data[:, 13:(13 + tsSet.grid_cells)]).astype(int) + 1, args.out_length))
+        rmse_loss_stat = np.zeros_like(nll_loss_stat)
+        both_count_stat = np.zeros_like(nll_loss_stat)
     elif args.metric == 'sample':
+        # Initialize for sample-based evaluation
         rmse_loss = torch.zeros(25).cuda()
         rmse_counts = torch.zeros(25).cuda()
         nll_loss = torch.zeros(25).cuda()
         nll_counts = torch.zeros(25).cuda()
     else:
-        raise RuntimeError("Wrong type of evaluation metric is specified")
+        raise RuntimeError("Invalid evaluation metric specified.")
 
+    timer = []  # Timer to track evaluation time
+
+    # Iterate through batches in the test set
     with torch.no_grad():
-        for i, data in enumerate(tsDataloader,0):
-            st_time = time.time()
-            nbsHist, nbsMask, planFut, planMask, targsHist, targsEncMask, targsFut, targsFutMask, lat_enc, lon_enc, idxs= data
-            # Initialize Variables
+        for i, data in enumerate(tsDataloader):
+            start_time = time.time()
+            nbsHist, nbsMask, planFut, planMask, targsHist, targsEncMask, targsFut, targsFutMask, lat_enc, lon_enc, idxs = data
+
+            # Move data to GPU if necessary
             if args.use_cuda:
                 nbsHist = nbsHist.cuda()
                 nbsMask = nbsMask.cuda()
@@ -102,104 +113,101 @@ def model_evaluate():
                 targsFut = targsFut.cuda()
                 targsFutMask = targsFutMask.cuda()
 
-
-            tic=time.time() 
+            tic = time.time()
+            # Make predictions using the model
             fut_pred, lat_pred, lon_pred = model(nbsHist, nbsMask, planFut, planMask, targsHist, targsEncMask, lat_enc, lon_enc)
-            pred_time=time.time() - tic 
-            timer.append(pred_time)
-          
+            prediction_time = time.time() - tic
+            timer.append(prediction_time)
+
+            # Update evaluation metrics based on the specified metric
             if args.metric == 'agent':
                 dsIDs, targsIDs = tsSet.batchTargetVehsInfo(idxs)
-                l, c = maskedNLLTest(fut_pred, lat_pred, lon_pred, targsFut, targsFutMask, separately=True)
-                s= (torch.sum(torch.max(lat_pred.data, 1)[1] == torch.max(lat_enc.data, 1)[1])).item() / lat_enc.size()[0]
-                ss = (torch.sum(torch.max(lon_pred.data, 1)[1] == torch.max(lon_enc.data, 1)[1])).item() / lon_enc.size()[0]
-                idx = lon_pred.data != 1
-                rr= lon_pred.data[idx] = 0
-                avg_val_lat_acc_.append(s)
-                avg_val_lon_acc_.append(ss)
-                fut_pred_max = torch.zeros_like(fut_pred[0])
+                nll, count_nll = maskedNLLTest(fut_pred, lat_pred, lon_pred, targsFut, targsFutMask, separately=True)
+                mse, count_mse = maskedMSE(fut_pred, targsFut, targsFutMask, separately=True)
+                # Update accuracy metrics for lateral and longitudinal predictions
+                lat_acc = (torch.sum(torch.argmax(lat_pred, dim=1) == torch.argmax(lat_enc, dim=1)).item() / lat_enc.size(0))
+                lon_acc = (torch.sum(torch.argmax(lon_pred, dim=1) == torch.argmax(lon_enc, dim=1)).item() / lon_enc.size(0))
 
-                for k in range(lat_pred.shape[0]):
-                    lat_man = torch.argmax(lat_pred[k, :]).detach()
-                    lon_man = torch.argmax(lon_pred[k, :]).detach()
-                    indx = lon_man * 3 + lat_man
-                    fut_pred_max[:, k, :] = fut_pred[indx][:, k, :]
-                  
-                ll, cc = maskedMSETest(fut_pred_max, targsFut, targsFutMask, separately=True)
-                
-                avg_val_lat_acc += (torch.sum(torch.max(lat_pred.data, 1)[1] == torch.max(lat_enc.data, 1)[1])).item() / lat_enc.size()[0]
-                avg_val_lon_acc += (torch.sum(torch.max(lon_pred.data, 1)[1] == torch.max(lon_enc.data, 1)[1])).item() / lon_enc.size()[0]
-                
-        
-                l = l.detach().cpu().numpy()
-                ll = ll.detach().cpu().numpy()
-                c = c.detach().cpu().numpy()
-                cc = cc.detach().cpu().numpy()
-                
+                # Store statistics for each vehicle
                 for j, targ in enumerate(targsIDs):
                     dsID = dsIDs[j]
-                    nll_loss_stat[dsID, targ, :]   += l[:, j]
-                    rmse_loss_stat[dsID, targ, :]  += ll[:, j]
-                    both_count_stat[dsID, targ, :]  += c[:, j]
+                    nll_loss_stat[dsID, targ, :] += nll[:, j]
+                    rmse_loss_stat[dsID, targ, :] += mse[:, j]
+                    both_count_stat[dsID, targ, :] += count_nll[:, j]
 
             elif args.metric == 'sample':
-                l, c = maskedNLLTest(fut_pred, lat_pred, lon_pred, targsFut, targsFutMask)
-                nll_loss += l.detach()
-                nll_counts += c.detach()
-                fut_pred_max = torch.zeros_like(fut_pred[0])
-                for k in range(lat_pred.shape[0]):
-                    lat_man = torch.argmax(lat_pred[k, :]).detach()
-                    lon_man = torch.argmax(lon_pred[k, :]).detach()
-                    indx = lon_man * 3 + lat_man
-                    fut_pred_max[:, k, :] = fut_pred[indx][:, k, :]
-                l, c = maskedMSETest(fut_pred_max, targsFut, targsFutMask)
-                rmse_loss += l.detach()
-                rmse_counts += c.detach()
+                # Sample-based evaluation
+                nll, count_nll = maskedNLLTest(fut_pred, lat_pred, lon_pred, targsFut, targsFutMask)
+                nll_loss += nll.detach()
+                nll_counts += count_nll.detach()
 
-            # Time estimate
-            batch_time = time.time() - st_time
-            avg_eva_time += batch_time
-            if i%100 == 99:
-                eta = avg_eva_time / 100 * (len(tsSet) / args.batch_size - i)
-                logging.info( "Evaluation progress(%):{:.2f}".format( i/(len(tsSet)/args.batch_size) * 100,) +
-                              " | ETA(s):{}".format(int(eta)))
+                mse, count_mse = maskedMSE(fut_pred, targsFut, targsFutMask)
+                rmse_loss += mse.detach()
+                rmse_counts += count_mse.detach()
+
+            # Calculate batch time and provide progress
+            batch_time = time.time() - start_time
+            avg_eva_time = batch_time / args.batch_size
+
+            if i % 100 == 99:
+                eta = avg_eva_time * (len(tsSet) / args.batch_size - i)
+                logging.info(f"Evaluation progress: {i/(len(tsSet)/args.batch_size) * 100:.2f}% | ETA: {int(eta)}s")
                 avg_eva_time = 0
 
-
+    # Final evaluation metrics calculation
     if args.metric == 'agent':
-        ds_ids, veh_ids = both_count_stat[:,:,0].nonzero()
-        num_vehs = len(veh_ids)
-        rmse_loss_averaged = np.zeros((args.out_length, num_vehs))
-        nll_loss_averaged = np.zeros((args.out_length, num_vehs))
-        count_averaged = np.zeros((args.out_length, num_vehs))
-      
-        for i in range(num_vehs):
-            count_averaged[:, i] = \
-                both_count_stat[ds_ids[i], veh_ids[i], :].astype(bool)
-            
-            rmse_loss_averaged[:,i] = rmse_loss_stat[ds_ids[i], veh_ids[i], :] \
-                                      * count_averaged[:, i] / (both_count_stat[ds_ids[i], veh_ids[i], :] + 1e-9)
-            
-            nll_loss_averaged[:,i]  = nll_loss_stat[ds_ids[i], veh_ids[i], :] \
-                                      * count_averaged[:, i] / (both_count_stat[ds_ids[i], veh_ids[i], :] + 1e-9)
-          
-        rmse_loss_sum = np.sum(rmse_loss_averaged, axis=1)
-        nll_loss_sum = np.sum(nll_loss_averaged, axis=1)
-        count_sum = np.sum(count_averaged, axis=1)
-        rmseOverall = np.power(rmse_loss_sum / count_sum, 0.5) * FEET2METER 
-        nllOverall = nll_loss_sum / count_sum
-        
+        # Aggregate metrics for agent-based evaluation
+        ds_ids, veh_ids = both_count_stat[:, :, 0].nonzero()
+        rmseOverall, nllOverall = [], []
+        for i in range(len(veh_ids)):
+            # Normalize RMSE and NLL by the number of predictions for each vehicle
+            rmse_avg = rmse_loss_stat[ds_ids[i], veh_ids[i], :] / (both_count_stat[ds_ids[i], veh_ids[i], :] + 1e-9)
+            nll_avg = nll_loss_stat[ds_ids[i], veh_ids[i], :] / (both_count_stat[ds_ids[i], veh_ids[i], :] + 1e-9)
+
+            # Convert RMSE from feet to meters
+            rmseOverall.append(np.sqrt(rmse_avg) * FEET2METER)
+            nllOverall.append(nll_avg)
+
+        rmseOverall = np.mean(rmseOverall, axis=0)
+        nllOverall = np.mean(nllOverall, axis=0)
+
     elif args.metric == 'sample':
-        rmseOverall = (torch.pow(rmse_loss / rmse_counts, 0.5) * FEET2METER).cpu()
-        nllOverall = (nll_loss / nll_counts).cpu()
+        # For sample-based evaluation, normalize RMSE and NLL by the counts
+        rmseOverall = (torch.sqrt(rmse_loss / rmse_counts) * FEET2METER).cpu().numpy()
+        nllOverall = (nll_loss / nll_counts).cpu().numpy()
 
+    # Log final RMSE and NLL results
+    logging.info(f"Final RMSE (m): {rmseOverall[4::5]}, Mean: {rmseOverall[4::5].mean():.3f}")
+    logging.info(f"Final NLL (nats): {nllOverall[4::5]}, Mean: {nllOverall[4::5].mean():.3f}")
 
-    logging.info("RMSE (m)\t=> {}, Mean={:.3f}".format(rmseOverall[4::5], rmseOverall[4::5].mean()))
-    logging.info("NLL (nats)\t=> {}, Mean={:.3f}".format(nllOverall[4::5], nllOverall[4::5].mean()))
-    
-    time2Pre=np.array(timer)
+    # Log prediction time statistics
+    time2Pre = np.array(timer)
+    logging.info(f"Average prediction time per batch: {np.mean(time2Pre):.4f}s")
 
+    # Generate a table summarizing the results
+    summary_table = PrettyTable()
+    summary_table.field_names = ["Metric", "Mean", "Std"]
+    summary_table.add_row(["RMSE (m)", np.mean(rmseOverall), np.std(rmseOverall)])
+    summary_table.add_row(["NLL (nats)", np.mean(nllOverall), np.std(nllOverall)])
+    print(summary_table)
 
+    # Optionally, visualize the RMSE and NLL results
+    #plt.figure(figsize=(10, 5))
+    #plt.subplot(1, 2, 1)
+    #sns.lineplot(data=rmseOverall, label='RMSE')
+    #plt.title("RMSE over time steps")
+    #plt.xlabel("Time step")
+    #plt.ylabel("RMSE (m)")
+
+    #plt.subplot(1, 2, 2)
+    #sns.lineplot(data=nllOverall, label='NLL')
+    #plt.title("NLL over time steps")
+    #plt.xlabel("Time step")
+    #plt.ylabel("NLL (nats)")
+
+    #plt.tight_layout()
+    #plt.show()
 
 if __name__ == '__main__':
     model_evaluate()
+
