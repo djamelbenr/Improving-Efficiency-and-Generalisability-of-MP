@@ -114,7 +114,13 @@ This repository is for testing the trained models for motion prediction on highw
 ```
 python3 evaluate.py --name ngsim_model --batch_size 64 \
     --test_set ./datasets/NGSIM/test.mat 
-```   
+```
+4. Running (end-to-end training)
+```
+python3 train.py --name NAME_MODEL --batch_size BATCH_SIZE --pretrain_epochs 5 --train_epochs 10 \
+    --train_set ./datasets/HIGHD/train.mat \
+    --val_set ./datasets/HIGHD/val.mat
+```
 
 Trained models can be downloaded [here](https://connectqutedu-my.sharepoint.com/)
 
