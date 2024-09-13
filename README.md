@@ -112,8 +112,8 @@ preprocess_data.m to pre-preprocess the raw data (note: the pre-processed data w
 This repository is for testing the trained models for motion prediction on highways. No end-to-end trainer is needed here.
 3.To use the pretrained models at ./ .py and evaluate the models performance run! 🎉 🎉
 ```
-python3 evaluate.py --name ngsim_model --batch_size 64 \
-    --test_set ./datasets/NGSIM/test.mat 
+python3 evaluate.py --name NAME_MODEL --batch_size BATCH_SIZE \
+    --test_set ./datasets/HIGHD/test.mat 
 ```
 4. Running (end-to-end training)
 ```
