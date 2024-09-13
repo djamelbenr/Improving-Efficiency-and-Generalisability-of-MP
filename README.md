@@ -88,13 +88,6 @@ From googledrive:
 * Download i-80: https://drive.google.com/open?id=19ovxiJLCnS1ar1dYvUIrfdz_UnGejK-k  
 * Download us-101: https://drive.google.com/open?id=14dMKew22_5evfOoSGEBYqHP3L92e7nyJ  
 
-Dataset fields:  
-* doc/trajectory-data-dictionary.htm  
-
-This Dataset is to be pre-processed with the Matlab function preprocess_data.m (that is a slightly modified version of the one from https://github.com/nachiket92/conv-social-pooling)
-    
-Dataset fields:  
-* doc/trajectory-data-dictionary.htm  
 
 ## HighD 
    * [https://www.highd.com/](https://www.highd-dataset.com/)
