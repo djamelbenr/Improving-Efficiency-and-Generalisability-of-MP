@@ -121,9 +121,7 @@ python3 train.py --name NAME_MODEL --batch_size BATCH_SIZE --pretrain_epochs 5 -
     --train_set ./datasets/HIGHD/train.mat \
     --val_set ./datasets/HIGHD/val.mat
 ```
-
-Trained models can be downloaded [here](https://connectqutedu-my.sharepoint.com/)
-
+ 
 ![Training Progress](images/training_progress.png)
   
  
