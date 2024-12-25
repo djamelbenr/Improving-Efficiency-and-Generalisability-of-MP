@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from torch.utils.tensorboard import SummaryWriter
 
 from modelTraj import TrajPred
-from data4process import highwayTrajDataset
+from data4process import TrajDataset
 from utils import initLogging, maskedNLL, maskedMSE, maskedNLLTest
 
 # Ensuring correct environment variables
